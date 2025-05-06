@@ -1,4 +1,4 @@
-const { Plugin, PluginSettingTab, Setting, TFile, MarkdownView } = require("obsidian");
+const { Plugin, PluginSettingTab, Setting, MarkdownView, MarkdownRenderer } = require("obsidian");
 
 class QuotesPlugin extends Plugin {
   settings = {
@@ -6,7 +6,6 @@ class QuotesPlugin extends Plugin {
     dailyTag: "quote-daily",
     dashboardTag: "quote-dashboard",
     lastDashboardUpdate: 0,
-    lastQuote: null,
   };
 
   async onload() {
@@ -18,7 +17,7 @@ class QuotesPlugin extends Plugin {
     // Añadir pestaña de configuración
     this.addSettingTab(new QuotesPluginSettings(this.app, this));
 
-    // Registrar procesador de markdown
+    // Registrar procesador de markdown para el dashboard
     this.registerMarkdownCodeBlockProcessor(this.settings.dashboardTag, (source, el, ctx) => this.renderDashboardQuote(el, ctx));
 
     // Comando para insertar quote
@@ -33,39 +32,60 @@ class QuotesPlugin extends Plugin {
   }
 
   async renderDashboardQuote(el, ctx) {
-    const quote = await this.getDailyQuote();
-    const quoteEl = el.createEl("div", { cls: "quote-daily-container" });
-    quoteEl.innerHTML = quote;
+    console.log("[Quotes] Renderizando dashboard quote...");
+    try {
+      const quote = await this.getDailyQuote();
+      console.log("[Quotes] Quote obtenida:", quote);
+
+      await MarkdownRenderer.renderMarkdown(quote, el, "", this);
+      console.log("[Quotes] Quote renderizada correctamente.");
+    } catch (error) {
+      console.error("[Quotes] Error en renderDashboardQuote:", error);
+    }
   }
 
   async updateDashboard() {
+    console.log("[Quotes] Verificando actualización del dashboard...");
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
+    console.log(`[Quotes] Última actualización: ${this.settings.lastDashboardUpdate}, Hoy: ${today}`);
+
     if (today > this.settings.lastDashboardUpdate) {
+      console.log("[Quotes] Actualizando dashboard...");
       this.settings.lastDashboardUpdate = today;
       await this.saveData(this.settings);
-      this.app.workspace.updateOptions();
+
+      // Forzar actualización de todas las vistas
+      this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
+        if (leaf.view instanceof MarkdownView) {
+          console.log("[Quotes] Actualizando vista:", leaf.view.file?.path);
+          leaf.view.previewMode.rerender(true);
+        }
+      });
     }
   }
 
   async getDailyQuote() {
+    console.log("[Quotes] Obteniendo quote del día...");
     const quotes = await this.loadQuotes();
+
     if (!quotes || quotes.length === 0) {
-      return "<blockquote>No se encontraron citas</blockquote>";
+      console.warn("[Quotes] No se encontraron citas");
+      return "> [!quote] No se encontraron citas\n> Verifica la configuración";
     }
 
     const now = new Date();
     const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
-    const quoteIndex = dayOfYear % quotes.length;
-    const { quote, source } = quotes[quoteIndex];
+    const index = dayOfYear % quotes.length;
 
-    return `
-            <blockquote class="quote-daily">
-                <p>${quote}</p>
-                <footer>— <cite>${source}</cite></footer>
-            </blockquote>
-        `;
+    console.log(`[Quotes] Día del año: ${dayOfYear}, Índice: ${index}`);
+
+    const { quote, source } = quotes[index];
+    const formattedQuote = `> [!quote] ${source}\n> ${quote}\n> — *${source}*`;
+
+    console.log("[Quotes] Quote formateada:", formattedQuote);
+    return formattedQuote;
   }
 
   async loadQuotes() {
@@ -81,14 +101,15 @@ class QuotesPlugin extends Plugin {
 
         if (quoteBlocks) {
           quoteBlocks.forEach((block) => {
-            const cleanQuote = block
-              .replace(/^> \[!quote\][ \t]*/gm, "")
+            const quoteText = block
+              .replace(/^> \[!quote\][^\n]*\n?>/, "")
               .replace(/^> /gm, "")
+              .replace(/\^ref-\d+/g, "")
               .trim();
 
-            if (cleanQuote) {
+            if (quoteText) {
               quotes.push({
-                quote: cleanQuote,
+                quote: quoteText,
                 source: source,
               });
             }
@@ -104,8 +125,8 @@ class QuotesPlugin extends Plugin {
   async insertDailyQuote() {
     const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (activeView) {
-      const quoteData = await this.getDailyQuote();
-      activeView.editor.replaceSelection(`> [!quote] Cita del día\n> ${quoteData}\n> — *Fuente*`);
+      const quote = await this.getDailyQuote();
+      activeView.editor.replaceSelection(quote);
     }
   }
 
