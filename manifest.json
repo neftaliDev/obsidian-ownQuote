@@ -1,0 +1,10 @@
+{
+  "id": "ownQuoteDay",
+  "name": "Own Quotes",
+  "version": "1.0.0",
+  "minAppVersion": "0.15.0",
+  "description": "Tus propias quote en tu vault",
+  "author": "nefDev",
+  "authorUrl": "https://github.com/tuusuario",
+  "isDesktopOnly": false
+}
