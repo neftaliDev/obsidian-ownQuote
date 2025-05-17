@@ -3,8 +3,8 @@
   "name": "Own Quotes",
   "version": "1.0.0",
   "minAppVersion": "0.15.0",
-  "description": "Tus propias quote en tu vault",
-  "author": "nefDev",
-  "authorUrl": "https://github.com/tuusuario",
+  "description": "Desde tu carpeta de quotes, usa los callouts para ensenar notas diarias o aleatorios.",
+  "author": "nefDevelop",
+  "authorUrl": "https://github.com/nefDevelop",
   "isDesktopOnly": false
 }
