@@ -82,7 +82,9 @@ class QuotesPlugin extends Plugin {
     console.log(`[Quotes] Día del año: ${dayOfYear}, Índice: ${index}`);
 
     const { quote, source } = quotes[index];
-    const formattedQuote = `> [!quote] ${source}\n> ${quote}\n> — *${source}*`;
+    // Original line: const formattedQuote = `> [!quote] ${source}\n> ${quote}\n> — *${source}*`;
+    // Modified line: Removed the duplicated source at the end.
+    const formattedQuote = `> [!quote] ${source}\n> ${quote}`;
 
     console.log("[Quotes] Quote formateada:", formattedQuote);
     return formattedQuote;
