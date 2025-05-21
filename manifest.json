@@ -6,5 +6,9 @@
   "description": "Desde tu carpeta de quotes, usa los callouts para ensenar notas diarias o aleatorios.",
   "author": "nefDevelop",
   "authorUrl": "https://github.com/nefDevelop",
+  "fundingUrl": {
+    "Github Sponsors": "https://github.com/sponsors/nefDevelop",
+    "Buy Me a Coffee": "https://buymeacoffee.com/nefdevelopb"
+  },
   "isDesktopOnly": false
 }
