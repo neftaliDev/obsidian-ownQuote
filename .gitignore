@@ -1,0 +1,8 @@
+# Archivos de datos específicos del plugin
+data.json
+
+# Archivos del sistema operativo
+.DS_Store
+
+# Registros y depuración
+*.log
