@@ -58,6 +58,8 @@ Contributions are welcome! Please open an issue or submit a pull request with cl
 
 ---
 
+- [ ] **Internacionalización (i18n)**: Implementar un sistema de traducciones (ej. para español e inglés) para que los textos de la UI (comandos, ajustes) no estén fijos en el código.
+
 # Posibles nuevas funciones o mejoras
 
 Aquí hay una lista de posibles nuevas funciones y mejoras que podrían mejorar la experiencia del plugin:
