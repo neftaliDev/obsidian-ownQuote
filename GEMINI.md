@@ -1,6 +1,6 @@
 
 
-- [ ] **Internacionalización (i18n)**: Implementar un sistema de traducciones (ej. para español e inglés) para que los textos de la UI (comandos, ajustes) no estén fijos en el código.
+- [ ] **Internacionalización (i18n)**: Implementar un sistema de traducciones (ej. para español e inglés) para que los textos de la UI (comandos, ajustes) no estén fijos en el código en carpeta locales y dentro los json.  El plugin debe leer el idioma de Obsidian y usar la traduccion correspondiente. Sino la tiene, ingles.
 
 # Posibles nuevas funciones o mejoras
 
@@ -38,6 +38,4 @@ Aquí hay una lista de posibles nuevas funciones y mejoras que podrían mejorar 
 
 15. **Exportación por fecha**: Añadir la opción de exportar citas por fecha específica para análisis temporal
 
----
 
-¡Espero que este README y la lista de mejoras te sean útiles para seguir desarrollando este plugin! 🚀
