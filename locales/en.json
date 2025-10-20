@@ -1,0 +1,32 @@
+{
+  "logs": {
+    "loaded": "Quotes Plugin loaded",
+    "unloaded": "Quotes Plugin unloaded",
+    "renderingDashboard": "[Quotes] Rendering dashboard quote...",
+    "quoteFetched": "[Quotes] Quote fetched:",
+    "quoteRendered": "[Quotes] Quote rendered successfully.",
+    "renderError": "[Quotes] Error in renderDashboardQuote:",
+    "checkingDashboardUpdate": "[Quotes] Checking dashboard update...",
+    "lastUpdate": "[Quotes] Last update: {lastUpdate}, Today: {today}",
+    "updatingDashboard": "[Quotes] Updating dashboard...",
+    "updatingView": "[Quotes] Updating view:",
+    "gettingDailyQuote": "[Quotes] Getting daily quote...",
+    "noQuotesFoundWarning": "[Quotes] No quotes found",
+    "dayInfo": "[Quotes] Day of year: {dayOfYear}, Index: {index}",
+    "formattedQuote": "[Quotes] Formatted quote:",
+    "loadingQuotesError": "Error loading quotes:"
+  },
+  "commands": {
+    "insertDaily": "Insert daily quote"
+  },
+  "dashboard": {
+    "noQuotesFound": "> [!quote] No quotes found\n> Check the configuration"
+  },
+  "settings": {
+    "folder": {
+      "name": "Quotes folder",
+      "desc": "Path where the files with quotes are located",
+      "placeholder": "E.g. Books-Quotes"
+    }
+  }
+}
