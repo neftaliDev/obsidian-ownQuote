@@ -1,0 +1,32 @@
+{
+  "logs": {
+    "loaded": "Plugin de Citas cargado",
+    "unloaded": "Plugin de Citas descargado",
+    "renderingDashboard": "[Citas] Renderizando cita del dashboard...",
+    "quoteFetched": "[Citas] Cita obtenida:",
+    "quoteRendered": "[Citas] Cita renderizada correctamente.",
+    "renderError": "[Citas] Error en renderDashboardQuote:",
+    "checkingDashboardUpdate": "[Citas] Verificando actualización del dashboard...",
+    "lastUpdate": "[Citas] Última actualización: {lastUpdate}, Hoy: {today}",
+    "updatingDashboard": "[Citas] Actualizando dashboard...",
+    "updatingView": "[Citas] Actualizando vista:",
+    "gettingDailyQuote": "[Citas] Obteniendo cita del día...",
+    "noQuotesFoundWarning": "[Citas] No se encontraron citas",
+    "dayInfo": "[Citas] Día del año: {dayOfYear}, Índice: {index}",
+    "formattedQuote": "[Citas] Cita formateada:",
+    "loadingQuotesError": "Error cargando citas:"
+  },
+  "commands": {
+    "insertDaily": "Insertar cita del día"
+  },
+  "dashboard": {
+    "noQuotesFound": "> [!quote] No se encontraron citas\n> Verifica la configuración"
+  },
+  "settings": {
+    "folder": {
+      "name": "Carpeta de quotes",
+      "desc": "Ruta donde se encuentran los archivos con quotes",
+      "placeholder": "Ej: Books-Quotes"
+    }
+  }
+}

@@ -1,4 +1,10 @@
-const { Plugin, PluginSettingTab, Setting, MarkdownView, MarkdownRenderer } = require("obsidian");
+const { Plugin, PluginSettingTab, Setting, MarkdownView, MarkdownRenderer, moment } = require("obsidian");
+
+// Helper function to navigate nested JSON
+function getNested(obj, path) {
+  if (!obj || !path) return undefined;
+  return path.split(".").reduce((acc, part) => acc && acc[part], obj);
+}
 
 class QuotesPlugin extends Plugin {
   settings = {
@@ -8,10 +14,37 @@ class QuotesPlugin extends Plugin {
     lastDashboardUpdate: 0,
   };
 
-  async onload() {
-    console.log("Quotes Plugin loaded");
+  // i18n properties
+  locale = {};
+  locale_en = {};
 
+  // Translation function
+  t(key, vars) {
+    let text = getNested(this.locale, key) || getNested(this.locale_en, key) || key;
+    if (vars) {
+      for (const [key, value] of Object.entries(vars)) {
+        text = text.replace(`{{${key}}}`, value);
+      }
+    }
+    return text;
+  }
+
+  // Load language files
+  async loadLocale() {
+    const enPath = `${this.manifest.dir}/locales/en.json`;
+    this.locale_en = JSON.parse(await this.app.vault.adapter.read(enPath));
+
+    const obsidianLang = moment.locale();
+    const langPath = `${this.manifest.dir}/locales/${obsidianLang}.json`;
+    this.locale = (await this.app.vault.adapter.exists(langPath))
+      ? JSON.parse(await this.app.vault.adapter.read(langPath))
+      : this.locale_en;
+  }
+
+  async onload() {
     // Cargar configuración
+    await this.loadLocale();
+    console.log(this.t("logs.loaded"));
     this.settings = Object.assign({}, this.settings, await this.loadData());
 
     // Añadir pestaña de configuración
@@ -23,7 +56,7 @@ class QuotesPlugin extends Plugin {
     // Comando para insertar quote
     this.addCommand({
       id: "insert-daily-quote",
-      name: "Insertar cita del día",
+      name: this.t("commands.insertDaily"),
       callback: () => this.insertDailyQuote(),
     });
 
@@ -32,34 +65,34 @@ class QuotesPlugin extends Plugin {
   }
 
   async renderDashboardQuote(el, ctx) {
-    console.log("[Quotes] Renderizando dashboard quote...");
+    console.log(this.t("logs.renderingDashboard"));
     try {
       const quote = await this.getDailyQuote();
-      console.log("[Quotes] Quote obtenida:", quote);
+      console.log(this.t("logs.quoteFetched"), quote);
 
       await MarkdownRenderer.renderMarkdown(quote, el, "", this);
-      console.log("[Quotes] Quote renderizada correctamente.");
+      console.log(this.t("logs.quoteRendered"));
     } catch (error) {
-      console.error("[Quotes] Error en renderDashboardQuote:", error);
+      console.error(this.t("logs.renderError"), error);
     }
   }
 
   async updateDashboard() {
-    console.log("[Quotes] Verificando actualización del dashboard...");
+    console.log(this.t("logs.checkingDashboardUpdate"));
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-    console.log(`[Quotes] Última actualización: ${this.settings.lastDashboardUpdate}, Hoy: ${today}`);
+    console.log(this.t("logs.lastUpdate", { lastUpdate: this.settings.lastDashboardUpdate, today: today }));
 
     if (today > this.settings.lastDashboardUpdate) {
-      console.log("[Quotes] Actualizando dashboard...");
+      console.log(this.t("logs.updatingDashboard"));
       this.settings.lastDashboardUpdate = today;
       await this.saveData(this.settings);
 
       // Forzar actualización de todas las vistas
       this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
         if (leaf.view instanceof MarkdownView) {
-          console.log("[Quotes] Actualizando vista:", leaf.view.file?.path);
+          console.log(this.t("logs.updatingView"), leaf.view.file?.path);
           leaf.view.previewMode.rerender(true);
         }
       });
@@ -67,26 +100,26 @@ class QuotesPlugin extends Plugin {
   }
 
   async getDailyQuote() {
-    console.log("[Quotes] Obteniendo quote del día...");
+    console.log(this.t("logs.gettingDailyQuote"));
     const quotes = await this.loadQuotes();
 
     if (!quotes || quotes.length === 0) {
-      console.warn("[Quotes] No se encontraron citas");
-      return "> [!quote] No se encontraron citas\n> Verifica la configuración";
+      console.warn(this.t("logs.noQuotesFoundWarning"));
+      return this.t("dashboard.noQuotesFound");
     }
 
     const now = new Date();
     const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
     const index = dayOfYear % quotes.length;
 
-    console.log(`[Quotes] Día del año: ${dayOfYear}, Índice: ${index}`);
+    console.log(this.t("logs.dayInfo", { dayOfYear: dayOfYear, index: index }));
 
     const { quote, source } = quotes[index];
     // Original line: const formattedQuote = `> [!quote] ${source}\n> ${quote}\n> — *${source}*`;
     // Modified line: Removed the duplicated source at the end.
     const formattedQuote = `> [!quote] ${source}\n> ${quote}`;
 
-    console.log("[Quotes] Quote formateada:", formattedQuote);
+    console.log(this.t("logs.formattedQuote"), formattedQuote);
     return formattedQuote;
   }
 
@@ -119,7 +152,7 @@ class QuotesPlugin extends Plugin {
         }
       }
     } catch (error) {
-      console.error("Error cargando quotes:", error);
+      console.error(this.t("logs.loadingQuotesError"), error);
     }
     return quotes;
   }
@@ -133,7 +166,7 @@ class QuotesPlugin extends Plugin {
   }
 
   onunload() {
-    console.log("Quotes Plugin unloaded");
+    console.log(this.t("logs.unloaded"));
   }
 }
 
@@ -148,11 +181,11 @@ class QuotesPluginSettings extends PluginSettingTab {
     containerEl.empty();
 
     new Setting(containerEl)
-      .setName("Carpeta de quotes")
-      .setDesc("Ruta donde se encuentran los archivos con quotes")
+      .setName(this.plugin.t("settings.folder.name"))
+      .setDesc(this.plugin.t("settings.folder.desc"))
       .addText((text) =>
         text
-          .setPlaceholder("Ej: Books-Quotes")
+          .setPlaceholder(this.plugin.t("settings.folder.placeholder"))
           .setValue(this.plugin.settings.quotesFolder)
           .onChange(async (value) => {
             this.plugin.settings.quotesFolder = value;
