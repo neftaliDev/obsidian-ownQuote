@@ -23,7 +23,7 @@ class QuotesPlugin extends Plugin {
     let text = getNested(this.locale, key) || getNested(this.locale_en, key) || key;
     if (vars) {
       for (const [key, value] of Object.entries(vars)) {
-        text = text.replace(`{{${key}}}`, value);
+        text = text.replace(`{${key}}`, value);
       }
     }
     return text;
