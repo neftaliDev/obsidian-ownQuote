@@ -1,3 +1,5 @@
+"use strict";
+
 const { Plugin, PluginSettingTab, Setting, MarkdownView, MarkdownRenderer, moment } = require("obsidian");
 
 // Helper function to navigate nested JSON
