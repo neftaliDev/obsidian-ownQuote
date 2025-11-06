@@ -32,9 +32,12 @@ Los archivos en la carpeta configurada deben tener citas en formato como este:
    ```
    ````
 
-3. Ejecuta el comando “Insertar cita del día” desde la paleta de comandos para insertar directamente la cita en una nota.
+3. La cita diaria se actualiza automáticamente una vez al día al abrir Obsidian o al cargar el dashboard.
 
-4. La cita diaria se actualiza automáticamente una vez al día al abrir Obsidian o al cargar el dashboard.
+---
+
+Tambien puedes usar el comando “Insertar cita del día” desde la paleta de comandos para insertar directamente la cita del dia en una nota. (Esta no cambia cada día)  
+
 
 ## Configuración
 
