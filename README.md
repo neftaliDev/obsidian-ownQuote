@@ -32,7 +32,7 @@ Los archivos en la carpeta configurada deben tener citas en formato como este:
    ```
    ````
 
-3. La cita diaria se actualiza automáticamente una vez al día al abrir Obsidian o al cargar el dashboard.
+3. La cita diaria se actualiza automáticamente una vez al día al abrir Obsidian.
 
 ---
 

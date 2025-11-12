@@ -1,32 +1,36 @@
 {
   "logs": {
-    "loaded": "Plugin de Citas cargado",
-    "unloaded": "Plugin de Citas descargado",
-    "renderingDashboard": "[Citas] Renderizando cita del dashboard...",
-    "quoteFetched": "[Citas] Cita obtenida:",
-    "quoteRendered": "[Citas] Cita renderizada correctamente.",
-    "renderError": "[Citas] Error en renderDashboardQuote:",
-    "checkingDashboardUpdate": "[Citas] Verificando actualización del dashboard...",
-    "lastUpdate": "[Citas] Última actualización: {lastUpdate}, Hoy: {today}",
-    "updatingDashboard": "[Citas] Actualizando dashboard...",
-    "updatingView": "[Citas] Actualizando vista:",
-    "gettingDailyQuote": "[Citas] Obteniendo cita del día...",
-    "noQuotesFoundWarning": "[Citas] No se encontraron citas",
-    "dayInfo": "[Citas] Día del año: {dayOfYear}, Índice: {index}",
-    "formattedQuote": "[Citas] Cita formateada:",
-    "loadingQuotesError": "Error cargando citas:"
+    "loaded": "Plugin de Citas Cargado",
+    "checkingDashboardUpdate": "Comprobando actualización del dashboard...",
+    "lastUpdate": "Última actualización: {lastUpdate}, Hoy: {today}",
+    "updatingDashboard": "Actualizando dashboard...",
+    "updatingView": "Actualizando vista: {viewPath}",
+    "gettingDailyQuote": "Obteniendo la cita del día...",
+    "noQuotesFoundWarning": "No se encontraron citas en la carpeta especificada.",
+    "dayInfo": "Día del año: {dayOfYear}, Índice de la cita: {index}",
+    "formattedQuote": "Cita formateada: {quote}",
+    "gettingRandomQuote": "Obteniendo una cita aleatoria...",
+    "randomInfo": "Índice aleatorio: {index}",
+    "loadingQuotesError": "Error al cargar las citas",
+    "unloaded": "Plugin de Citas Descargado",
+    "renderError": "Error al renderizar la cita",
+    "newDayOrNoQuote": "Nuevo día o no hay cita guardada. Obteniendo una nueva cita del día."
+  },
+  "dashboard": {
+    "noQuotesFound": "No se encontraron citas. Revisa tu configuración.",
+    "refreshTooltip": "Obtener una nueva cita aleatoria"
   },
   "commands": {
     "insertDaily": "Insertar cita del día"
   },
-  "dashboard": {
-    "noQuotesFound": "> [!quote] No se encontraron citas\n> Verifica la configuración"
-  },
   "settings": {
     "folder": {
-      "name": "Carpeta de quotes",
-      "desc": "Ruta donde se encuentran los archivos con quotes",
-      "placeholder": "Ej: Books-Quotes"
+      "name": "Carpeta de Citas",
+      "desc": "La carpeta donde se guardan tus archivos de citas.",
+      "placeholder": "Ejemplo: Personal/Citas"
     }
+  },
+  "notices": {
+    "copied": "¡Cita copiada al portapapeles!"
   }
 }

@@ -1,6 +1,6 @@
 "use strict";
 
-const { Plugin, PluginSettingTab, Setting, MarkdownView, MarkdownRenderer, moment } = require("obsidian");
+const { Plugin, PluginSettingTab, Setting, MarkdownView, MarkdownRenderer, moment, setIcon } = require("obsidian");
 
 // Helper function to navigate nested JSON
 function getNested(obj, path) {
@@ -14,6 +14,8 @@ class QuotesPlugin extends Plugin {
     dailyTag: "quote-daily",
     dashboardTag: "quote-dashboard",
     lastDashboardUpdate: 0,
+    currentDailyQuote: null, // Almacenará { quote: string, source: string }
+    currentQuoteDate: null, // Almacenará la fecha en formato YYYY-MM-DD
   };
 
   // i18n properties
@@ -49,6 +51,19 @@ class QuotesPlugin extends Plugin {
     console.log(this.t("logs.loaded"));
     this.settings = Object.assign({}, this.settings, await this.loadData());
 
+    // --- Inyección de estilos CSS para el botón de refresco ---
+    const styleEl = document.createElement("style");
+    styleEl.id = "quotes-plugin-styles";
+    styleEl.innerHTML = `
+      .quotes-plugin-container .callout { position: relative; }
+      .quotes-plugin-refresh-btn { position: absolute; bottom: 6px; right: 8px; cursor: pointer; color: var(--text-muted); opacity: 0.6; transition: opacity 0.2s ease-in-out; }
+      .quotes-plugin-refresh-btn:hover { color: var(--text-normal); opacity: 1; }
+      .quotes-plugin-refresh-btn svg { width: 14px; height: 14px; }
+    `;
+    document.head.appendChild(styleEl);
+    this.register(() => styleEl.remove());
+    // --- Fin de inyección de estilos ---
+
     // Añadir pestaña de configuración
     this.addSettingTab(new QuotesPluginSettings(this.app, this));
 
@@ -67,16 +82,52 @@ class QuotesPlugin extends Plugin {
   }
 
   async renderDashboardQuote(el, ctx) {
-    console.log(this.t("logs.renderingDashboard"));
-    try {
-      const quote = await this.getDailyQuote();
-      console.log(this.t("logs.quoteFetched"), quote);
+    el.empty();
+    // Usamos el elemento 'el' como el contenedor principal para asegurar que los estilos de Obsidian se apliquen correctamente.
+    el.addClass("quotes-plugin-container");
 
-      await MarkdownRenderer.renderMarkdown(quote, el, "", this);
-      console.log(this.t("logs.quoteRendered"));
-    } catch (error) {
-      console.error(this.t("logs.renderError"), error);
-    }
+    const renderNewQuote = async (quoteGetter) => {
+      el.empty(); // Limpiar el contenedor antes de renderizar de nuevo.
+      try {
+        const quote = await quoteGetter();
+        await MarkdownRenderer.renderMarkdown(quote, el, ctx.sourcePath, this);
+
+        // Una vez que el callout está renderizado, añadimos el botón de refresco dentro de él.
+        const calloutEl = el.querySelector(".callout");
+        if (calloutEl) {
+          const refreshBtn = calloutEl.createDiv({ cls: "quotes-plugin-refresh-btn" });
+          setIcon(refreshBtn, "refresh-cw");
+          refreshBtn.setAttribute("aria-label", this.t("dashboard.refreshTooltip"));
+          this.registerDomEvent(refreshBtn, "click", (e) => {
+            e.stopPropagation(); // Evitar que el clic se propague a otros elementos.
+            this.handleRefresh(el, ctx);
+          });
+        }
+      } catch (error) {
+        console.error(this.t("logs.renderError"), error);
+        el.setText(this.t("dashboard.noQuotesFound"));
+      }
+    };
+
+    // Render inicial con la cita del día (que ahora persiste)
+    await renderNewQuote(() => this.getCurrentQuote());
+  }
+
+  /**
+   * Esta función ya no es necesaria para el dashboard, pero la mantenemos
+   * por si se usa en otro lugar o para futuras funcionalidades.
+   * El dashboard ahora se actualiza dinámicamente.
+   * La lógica de actualización diaria se maneja en `getCurrentQuote`.
+   */
+  async handleRefresh(el, ctx) {
+    // Al refrescar, obtenemos una nueva cita aleatoria y la establecemos como la actual
+    const newQuote = await this.getRandomQuote(true); // true para forzar una nueva cita
+    this.settings.currentDailyQuote = newQuote;
+    this.settings.currentQuoteDate = moment().format("YYYY-MM-DD");
+    await this.saveData(this.settings);
+
+    // Volvemos a renderizar el bloque completo
+    this.renderDashboardQuote(el, ctx);
   }
 
   async updateDashboard() {
@@ -101,6 +152,29 @@ class QuotesPlugin extends Plugin {
     }
   }
 
+  async getCurrentQuote() {
+    const todayStr = moment().format("YYYY-MM-DD");
+
+    // Si la fecha guardada no es hoy, o no hay cita guardada, obtenemos una nueva.
+    if (this.settings.currentQuoteDate !== todayStr || !this.settings.currentDailyQuote) {
+      console.log(this.t("logs.newDayOrNoQuote"));
+      const dailyQuote = await this.getDailyQuote(); // Obtiene la cita determinista para el día
+      this.settings.currentDailyQuote = dailyQuote;
+      this.settings.currentQuoteDate = todayStr;
+      await this.saveData(this.settings);
+    }
+
+    const { quote, source } = this.settings.currentDailyQuote;
+
+    if (!quote || !source) {
+      return this.t("dashboard.noQuotesFound");
+    }
+
+    const formattedQuote = `> [!quote] ${source}\n> ${quote}`;
+    console.log(this.t("logs.formattedQuote"), formattedQuote);
+    return formattedQuote;
+  }
+
   async getDailyQuote() {
     console.log(this.t("logs.gettingDailyQuote"));
     const quotes = await this.loadQuotes();
@@ -118,11 +192,36 @@ class QuotesPlugin extends Plugin {
 
     const { quote, source } = quotes[index];
     // Original line: const formattedQuote = `> [!quote] ${source}\n> ${quote}\n> — *${source}*`;
-    // Modified line: Removed the duplicated source at the end.
+    // Devolvemos el objeto para poder guardarlo en settings
+    return { quote, source };
+  }
+
+  async getRandomQuote(forceNew = false) {
+    console.log(this.t("logs.gettingRandomQuote"));
+    const quotes = await this.loadQuotes();
+
+    if (!quotes || quotes.length === 0) {
+      console.warn(this.t("logs.noQuotesFoundWarning"));
+      return { quote: this.t("dashboard.noQuotesFound"), source: "Error" };
+    }
+
+    let index = Math.floor(Math.random() * quotes.length);
+
+    // Si se fuerza una nueva y es la misma que la actual, intenta buscar otra
+    if (forceNew && this.settings.currentDailyQuote && quotes.length > 1) {
+      const currentText = this.settings.currentDailyQuote.quote;
+      while (quotes[index].quote === currentText) {
+        index = Math.floor(Math.random() * quotes.length);
+      }
+    }
+
+    console.log(this.t("logs.randomInfo", { index: index }));
+
+    const { quote, source } = quotes[index];
     const formattedQuote = `> [!quote] ${source}\n> ${quote}`;
 
     console.log(this.t("logs.formattedQuote"), formattedQuote);
-    return formattedQuote;
+    return { quote, source };
   }
 
   async loadQuotes() {
@@ -162,8 +261,9 @@ class QuotesPlugin extends Plugin {
   async insertDailyQuote() {
     const activeView = this.app.workspace.getActiveViewOfType(MarkdownView);
     if (activeView) {
-      const quote = await this.getDailyQuote();
-      activeView.editor.replaceSelection(quote);
+      // Usamos la cita actual del dashboard, no la determinista del día
+      const quoteText = await this.getCurrentQuote();
+      if (quoteText !== this.t("dashboard.noQuotesFound")) activeView.editor.replaceSelection(quoteText);
     }
   }
 
