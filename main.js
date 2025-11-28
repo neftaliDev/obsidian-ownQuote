@@ -56,7 +56,7 @@ class QuotesPlugin extends Plugin {
     styleEl.id = "quotes-plugin-styles";
     styleEl.innerHTML = `
       .quotes-plugin-container .callout { position: relative; }
-      .quotes-plugin-refresh-btn { position: absolute; bottom: 6px; right: 8px; cursor: pointer; color: var(--text-muted); opacity: 0.6; transition: opacity 0.2s ease-in-out; }
+      .quotes-plugin-refresh-btn { position: absolute; bottom: 8px; right: 10px; cursor: pointer; color: var(--text-muted); opacity: 0.6; transition: opacity 0.2s ease-in-out; }
       .quotes-plugin-refresh-btn:hover { color: var(--text-normal); opacity: 1; }
       .quotes-plugin-refresh-btn svg { width: 14px; height: 14px; }
     `;
