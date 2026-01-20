@@ -12,7 +12,7 @@ const DEBUG = 0; // Cambia a 0 para desactivar los logs
 
 function debugLog(...args) {
   if (DEBUG === 1) {
-    debugLog(...args);
+    console.log(...args);
   }
 }
 
