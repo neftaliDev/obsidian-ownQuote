@@ -8,6 +8,14 @@ function getNested(obj, path) {
   return path.split(".").reduce((acc, part) => acc && acc[part], obj);
 }
 
+const DEBUG = 0; // Cambia a 0 para desactivar los logs
+
+function debugLog(...args) {
+  if (DEBUG === 1) {
+    debugLog(...args);
+  }
+}
+
 class QuotesPlugin extends Plugin {
   settings = {
     quotesFolder: "Books-Quotes",
@@ -48,7 +56,7 @@ class QuotesPlugin extends Plugin {
   async onload() {
     // Cargar configuración
     await this.loadLocale();
-    console.log(this.t("logs.loaded"));
+    debugLog(this.t("logs.loaded"));
     this.settings = Object.assign({}, this.settings, await this.loadData());
 
     // --- Inyección de estilos CSS para el botón de refresco ---
@@ -131,21 +139,21 @@ class QuotesPlugin extends Plugin {
   }
 
   async updateDashboard() {
-    console.log(this.t("logs.checkingDashboardUpdate"));
+    debugLog(this.t("logs.checkingDashboardUpdate"));
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-    console.log(this.t("logs.lastUpdate", { lastUpdate: this.settings.lastDashboardUpdate, today: today }));
+    debugLog(this.t("logs.lastUpdate", { lastUpdate: this.settings.lastDashboardUpdate, today: today }));
 
     if (today > this.settings.lastDashboardUpdate) {
-      console.log(this.t("logs.updatingDashboard"));
+      debugLog(this.t("logs.updatingDashboard"));
       this.settings.lastDashboardUpdate = today;
       await this.saveData(this.settings);
 
       // Forzar actualización de todas las vistas
       this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
         if (leaf.view instanceof MarkdownView) {
-          console.log(this.t("logs.updatingView"), leaf.view.file?.path);
+          debugLog(this.t("logs.updatingView"), leaf.view.file?.path);
           leaf.view.previewMode.rerender(true);
         }
       });
@@ -157,7 +165,7 @@ class QuotesPlugin extends Plugin {
 
     // Si la fecha guardada no es hoy, o no hay cita guardada, obtenemos una nueva.
     if (this.settings.currentQuoteDate !== todayStr || !this.settings.currentDailyQuote) {
-      console.log(this.t("logs.newDayOrNoQuote"));
+      debugLog(this.t("logs.newDayOrNoQuote"));
       const dailyQuote = await this.getDailyQuote(); // Obtiene la cita determinista para el día
       this.settings.currentDailyQuote = dailyQuote;
       this.settings.currentQuoteDate = todayStr;
@@ -171,12 +179,12 @@ class QuotesPlugin extends Plugin {
     }
 
     const formattedQuote = `> [!quote] ${source}\n> ${quote}`;
-    console.log(this.t("logs.formattedQuote"), formattedQuote);
+    debugLog(this.t("logs.formattedQuote"), formattedQuote);
     return formattedQuote;
   }
 
   async getDailyQuote() {
-    console.log(this.t("logs.gettingDailyQuote"));
+    debugLog(this.t("logs.gettingDailyQuote"));
     const quotes = await this.loadQuotes();
 
     if (!quotes || quotes.length === 0) {
@@ -188,7 +196,7 @@ class QuotesPlugin extends Plugin {
     const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / (1000 * 60 * 60 * 24));
     const index = dayOfYear % quotes.length;
 
-    console.log(this.t("logs.dayInfo", { dayOfYear: dayOfYear, index: index }));
+    debugLog(this.t("logs.dayInfo", { dayOfYear: dayOfYear, index: index }));
 
     const { quote, source } = quotes[index];
     // Original line: const formattedQuote = `> [!quote] ${source}\n> ${quote}\n> — *${source}*`;
@@ -197,7 +205,7 @@ class QuotesPlugin extends Plugin {
   }
 
   async getRandomQuote(forceNew = false) {
-    console.log(this.t("logs.gettingRandomQuote"));
+    debugLog(this.t("logs.gettingRandomQuote"));
     const quotes = await this.loadQuotes();
 
     if (!quotes || quotes.length === 0) {
@@ -215,12 +223,12 @@ class QuotesPlugin extends Plugin {
       }
     }
 
-    console.log(this.t("logs.randomInfo", { index: index }));
+    debugLog(this.t("logs.randomInfo", { index: index }));
 
     const { quote, source } = quotes[index];
     const formattedQuote = `> [!quote] ${source}\n> ${quote}`;
 
-    console.log(this.t("logs.formattedQuote"), formattedQuote);
+    debugLog(this.t("logs.formattedQuote"), formattedQuote);
     return { quote, source };
   }
 
@@ -268,7 +276,7 @@ class QuotesPlugin extends Plugin {
   }
 
   onunload() {
-    console.log(this.t("logs.unloaded"));
+    debugLog(this.t("logs.unloaded"));
   }
 }
 
@@ -292,7 +300,7 @@ class QuotesPluginSettings extends PluginSettingTab {
           .onChange(async (value) => {
             this.plugin.settings.quotesFolder = value;
             await this.plugin.saveData(this.plugin.settings);
-          })
+          }),
       );
   }
 }
